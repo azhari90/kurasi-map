@@ -2,14 +2,26 @@ from fastapi import Depends, HTTPException, status, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from supabase import create_client, Client
 from typing import Optional, Dict, Any
+import logging
 
 from app.core.config import settings
 
-# Initialize Supabase client
-supabase: Client = create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
+# Initialize logger
+logger = logging.getLogger(__name__)
+
+# Initialize Supabase client with error handling
+try:
+    if settings.SUPABASE_URL and settings.SUPABASE_KEY:
+        supabase: Client = create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
+    else:
+        logger.warning("Supabase credentials not configured. Using mock client.")
+        supabase = None
+except Exception as e:
+    logger.error(f"Failed to initialize Supabase client: {str(e)}")
+    supabase = None
 
 # Security scheme for JWT tokens
-security = HTTPBearer()
+security = HTTPBearer(auto_error=False)
 
 async def get_current_user(
     request: Request,
@@ -21,6 +33,10 @@ async def get_current_user(
     Returns None if no valid token is found (unauthenticated).
     Raises HTTPException if token is invalid.
     """
+    # If Supabase is not configured, return None (unauthenticated)
+    if not supabase:
+        return None
+        
     # Check for token in cookies first (for browser sessions)
     token = request.cookies.get("access_token")
     
@@ -37,12 +53,13 @@ async def get_current_user(
         user = supabase.auth.get_user(token)
         return user.dict()["user"]
     except Exception as e:
+        logger.error(f"Error verifying token: {str(e)}")
         # Invalid token
         return None
 
 async def get_subscription_plan(user_id: str) -> str:
     """Get the user's subscription plan."""
-    if not user_id:
+    if not user_id or not supabase:
         return settings.FREE_PLAN_ID
     
     try:
@@ -55,6 +72,7 @@ async def get_subscription_plan(user_id: str) -> str:
             # Default to free plan if no subscription found
             return settings.FREE_PLAN_ID
     except Exception as e:
+        logger.error(f"Error getting subscription plan: {str(e)}")
         # On error, default to free plan
         return settings.FREE_PLAN_ID
 

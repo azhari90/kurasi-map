@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - Kurasi Map{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3">
+            <div class="card shadow mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Admin Panel</h5>
+                </div>
+                <div class="list-group list-group-flush">
+                    <a href="/admin" class="list-group-item list-group-item-action active">
+                        <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                    </a>
+                    <a href="/admin/users" class="list-group-item list-group-item-action">
+                        <i class="fas fa-users me-2"></i>Users
+                    </a>
+                    <a href="/admin/locations" class="list-group-item list-group-item-action">
+                        <i class="fas fa-map-marker-alt me-2"></i>Locations
+                    </a>
+                    <a href="/admin/login-activities" class="list-group-item list-group-item-action">
+                        <i class="fas fa-sign-in-alt me-2"></i>Login Activities
+                    </a>
+                    <a href="/admin/categories" class="list-group-item list-group-item-action">
+                        <i class="fas fa-tags me-2"></i>Categories
+                    </a>
+                    <a href="/admin/subscriptions" class="list-group-item list-group-item-action">
+                        <i class="fas fa-crown me-2"></i>Subscriptions
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="col-md-9">
+            <div class="card shadow mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Dashboard</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-4">
+                            <div class="card bg-primary text-white">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-0">Total Users</h6>
+                                            <h2 class="mb-0">3</h2>
+                                        </div>
+                                        <i class="fas fa-users fa-2x"></i>
+                                    </div>
+                                </div>
+                                <div class="card-footer bg-transparent border-0">
+                                    <a href="/admin/users" class="text-white">View Details <i class="fas fa-arrow-right ms-1"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4 mb-4">
+                            <div class="card bg-success text-white">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-0">Total Locations</h6>
+                                            <h2 class="mb-0">10</h2>
+                                        </div>
+                                        <i class="fas fa-map-marker-alt fa-2x"></i>
+                                    </div>
+                                </div>
+                                <div class="card-footer bg-transparent border-0">
+                                    <a href="/admin/locations" class="text-white">View Details <i class="fas fa-arrow-right ms-1"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4 mb-4">
+                            <div class="card bg-warning text-dark">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-0">Premium Users</h6>
+                                            <h2 class="mb-0">2</h2>
+                                        </div>
+                                        <i class="fas fa-crown fa-2x"></i>
+                                    </div>
+                                </div>
+                                <div class="card-footer bg-transparent border-0">
+                                    <a href="/admin/users" class="text-dark">View Details <i class="fas fa-arrow-right ms-1"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">Recent Users</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>Name</th>
+                                                    <th>Email</th>
+                                                    <th>Role</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td>User One</td>
+                                                    <td>user1@example.com</td>
+                                                    <td><span class="badge bg-secondary">User</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td>User Two</td>
+                                                    <td>user2@example.com</td>
+                                                    <td><span class="badge bg-secondary">User</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Admin User</td>
+                                                    <td>admin@example.com</td>
+                                                    <td><span class="badge bg-primary">Admin</span></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-4">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">Recent Locations</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>Name</th>
+                                                    <th>Category</th>
+                                                    <th>Premium</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td>Warung Tekko</td>
+                                                    <td>Restaurants</td>
+                                                    <td><span class="badge bg-secondary">No</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Sushi Tei</td>
+                                                    <td>Restaurants</td>
+                                                    <td><span class="badge bg-secondary">No</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Djournal Coffee</td>
+                                                    <td>Cafes</td>
+                                                    <td><span class="badge bg-secondary">No</span></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

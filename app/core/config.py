@@ -1,5 +1,5 @@
 import os
-from pydantic import BaseSettings
+from pydantic_settings import BaseSettings
 from typing import Optional
 
 class Settings(BaseSettings):
@@ -15,9 +15,9 @@ class Settings(BaseSettings):
     SUPABASE_KEY: str = os.getenv("SUPABASE_KEY", "")
     SUPABASE_SERVICE_KEY: str = os.getenv("SUPABASE_SERVICE_KEY", "")
     
-    # Map settings
-    DEFAULT_LAT: float = float(os.getenv("DEFAULT_LAT", "-6.2088"))
-    DEFAULT_LNG: float = float(os.getenv("DEFAULT_LNG", "106.8456"))
+    # Map settings - Jakarta, Indonesia coordinates
+    DEFAULT_LAT: float = float(os.getenv("DEFAULT_LAT", "-6.2088"))  # Jakarta latitude
+    DEFAULT_LNG: float = float(os.getenv("DEFAULT_LNG", "106.8456"))  # Jakarta longitude
     DEFAULT_ZOOM: int = int(os.getenv("DEFAULT_ZOOM", "13"))
     
     # Subscription plans

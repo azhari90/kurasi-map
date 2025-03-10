@@ -84,3 +84,15 @@ class UserProfile(BaseModel):
     email: str
     full_name: Optional[str] = None
     subscription: Optional[SubscriptionPlan] = None
+
+class LoginActivity(BaseModel):
+    """Login activity model for tracking user logins."""
+    id: Optional[int] = None
+    user_id: str
+    email: str
+    ip_address: Optional[str] = None
+    user_agent: Optional[str] = None
+    device_info: Optional[str] = None
+    login_status: str  # "success" or "failed"
+    login_time: datetime = Field(default_factory=datetime.now)
+    location: Optional[str] = None  # Approximate location based on IP

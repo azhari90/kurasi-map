@@ -28,7 +28,7 @@ function isAuthenticated() {
 // Logout function
 function logout() {
     removeToken();
-    window.location.href = '/login';
+    window.location.href = '/logout';
 }
 
 // Add auth header to fetch requests
