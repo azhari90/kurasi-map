@@ -316,26 +316,21 @@ async def log_login_activity(
         # Always try to insert login activity
         logger.info(f"Logging login activity for {email} ({login_status})")
         
-        # Use service role key if available to bypass RLS
-        if hasattr(settings, 'SUPABASE_SERVICE_KEY') and settings.SUPABASE_SERVICE_KEY:
-            try:
-                # Create a temporary client with service role key
-                service_client = create_client(settings.SUPABASE_URL, settings.SUPABASE_SERVICE_KEY)
-                response = service_client.table("login_activities").insert(login_data).execute()
-                
-                if response.data and len(response.data) > 0:
-                    logger.info(f"Login activity recorded with ID: {response.data[0].get('id')}")
-                    return response.data[0]
-            except Exception as service_error:
-                logger.error(f"Error using service role for login activity: {str(service_error)}")
-                # Fall back to regular client
+        # In development mode, just log locally and return
+        if settings.DEBUG:
+            logger.info(f"DEBUG mode: Login activity logged locally for {email} ({login_status})")
+            return login_data
         
-        # Try with regular client
-        response = supabase.table("login_activities").insert(login_data).execute()
-        
-        if response.data and len(response.data) > 0:
-            logger.info(f"Login activity recorded with ID: {response.data[0].get('id')}")
-            return response.data[0]
+        # Try with regular client in production
+        try:
+            response = supabase.table("login_activities").insert(login_data).execute()
+            
+            if response.data and len(response.data) > 0:
+                logger.info(f"Login activity recorded with ID: {response.data[0].get('id')}")
+                return response.data[0]
+        except Exception as insert_error:
+            logger.error(f"Error inserting login activity: {str(insert_error)}")
+            # Continue with local logging
         
         # If insert fails or returns no data, just log and return the data
         logger.info(f"Login activity: {login_data['email']} ({login_data['login_status']})")
