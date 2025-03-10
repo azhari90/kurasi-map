@@ -315,6 +315,22 @@ async def log_login_activity(
     try:
         # Always try to insert login activity
         logger.info(f"Logging login activity for {email} ({login_status})")
+        
+        # Use service role key if available to bypass RLS
+        if hasattr(settings, 'SUPABASE_SERVICE_KEY') and settings.SUPABASE_SERVICE_KEY:
+            try:
+                # Create a temporary client with service role key
+                service_client = create_client(settings.SUPABASE_URL, settings.SUPABASE_SERVICE_KEY)
+                response = service_client.table("login_activities").insert(login_data).execute()
+                
+                if response.data and len(response.data) > 0:
+                    logger.info(f"Login activity recorded with ID: {response.data[0].get('id')}")
+                    return response.data[0]
+            except Exception as service_error:
+                logger.error(f"Error using service role for login activity: {str(service_error)}")
+                # Fall back to regular client
+        
+        # Try with regular client
         response = supabase.table("login_activities").insert(login_data).execute()
         
         if response.data and len(response.data) > 0:
@@ -325,7 +341,14 @@ async def log_login_activity(
         logger.info(f"Login activity: {login_data['email']} ({login_data['login_status']})")
         return login_data
     except Exception as e:
-        logger.error(f"Error logging login activity: {str(e)}")
+        # Check if it's an RLS error
+        if "violates row-level security policy" in str(e):
+            logger.warning(f"RLS policy prevented login activity logging. This is expected if you haven't set up the proper policies.")
+            # Still log the activity locally
+            logger.info(f"Login activity (local only): {login_data['email']} ({login_data['login_status']})")
+        else:
+            logger.error(f"Error logging login activity: {str(e)}")
+        
         return login_data
 
 async def get_login_activities(
