@@ -313,15 +313,15 @@ async def log_login_activity(
         return login_data
     
     try:
-        # Only try to insert if we're in production mode
-        if not settings.DEBUG:
-            # Insert into login_activities table
-            response = supabase.table("login_activities").insert(login_data).execute()
-            
-            if response.data and len(response.data) > 0:
-                return response.data[0]
+        # Always try to insert login activity
+        logger.info(f"Logging login activity for {email} ({login_status})")
+        response = supabase.table("login_activities").insert(login_data).execute()
         
-        # In debug mode or if insert fails, just log and return the data
+        if response.data and len(response.data) > 0:
+            logger.info(f"Login activity recorded with ID: {response.data[0].get('id')}")
+            return response.data[0]
+        
+        # If insert fails or returns no data, just log and return the data
         logger.info(f"Login activity: {login_data['email']} ({login_data['login_status']})")
         return login_data
     except Exception as e:

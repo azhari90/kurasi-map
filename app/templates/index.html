@@ -150,11 +150,64 @@
         maxZoom: 19
     }).addTo(map);
     
-    // Add a marker for Jakarta city center
-    L.marker([{{ default_lat }}, {{ default_lng }}])
-        .addTo(map)
-        .bindPopup('Jakarta, Indonesia')
-        .openPopup();
+    // User location marker
+    let userMarker = null;
+    
+    // Try to get user's current location
+    async function showUserLocation() {
+        try {
+            const position = await getCurrentLocation();
+            
+            // Create a blue marker for user's location
+            const userIcon = L.divIcon({
+                html: `<div style="background-color: #2196F3; width: 16px; height: 16px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.3);"></div>`,
+                className: 'user-location-marker',
+                iconSize: [22, 22],
+                iconAnchor: [11, 11]
+            });
+            
+            // Remove previous marker if exists
+            if (userMarker) {
+                map.removeLayer(userMarker);
+            }
+            
+            // Add new marker
+            userMarker = L.marker([position.lat, position.lng], { icon: userIcon }).addTo(map);
+            userMarker.bindPopup('Your location').openPopup();
+            
+            // Center map on user's location
+            map.setView([position.lat, position.lng], 15);
+            
+            // Add accuracy circle
+            const accuracyCircle = L.circle([position.lat, position.lng], {
+                radius: 100,  // Approximate accuracy in meters
+                color: '#2196F3',
+                fillColor: '#2196F3',
+                fillOpacity: 0.1
+            }).addTo(map);
+            
+        } catch (error) {
+            console.error('Error getting user location:', error);
+            // Fall back to default location (Jakarta)
+        }
+    }
+    
+    // Call the function to show user location
+    showUserLocation();
+    
+    // Add a "Find Me" button to the map
+    const findMeButton = L.control({ position: 'bottomright' });
+    findMeButton.onAdd = function() {
+        const div = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
+        div.innerHTML = `<a href="#" title="Find my location" style="display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; background: white; font-size: 18px;"><i class="fas fa-location-arrow"></i></a>`;
+        div.onclick = function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            showUserLocation();
+        };
+        return div;
+    };
+    findMeButton.addTo(map);
     
     // Store markers by category (using categoryIcons from main.js)
     const markers = {
