@@ -3,6 +3,7 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from supabase import create_client, Client
 from typing import Optional, Dict, Any
 import logging
+from datetime import datetime
 
 from app.core.config import settings
 
@@ -33,9 +34,17 @@ async def get_current_user(
     Returns None if no valid token is found (unauthenticated).
     Raises HTTPException if token is invalid.
     """
-    # If Supabase is not configured, return None (unauthenticated)
+    # If Supabase is not configured, return mock user for development
     if not supabase:
-        return None
+        logger.warning("Supabase not configured. Using mock user for development.")
+        return {
+            "id": "mock-user-id",
+            "email": "mock@example.com",
+            "user_metadata": {"full_name": "Mock User"},
+            "app_metadata": {},
+            "role": "admin",  # For development
+            "created_at": datetime.now().isoformat(),
+        }
         
     # Check for token in cookies first (for browser sessions)
     token = request.cookies.get("access_token")
@@ -51,7 +60,9 @@ async def get_current_user(
     try:
         # Verify the token with Supabase
         user = supabase.auth.get_user(token)
-        return user.dict()["user"]
+        user_data = user.dict()["user"]
+        logger.info(f"Authenticated user: {user_data.get('email')}")
+        return user_data
     except Exception as e:
         logger.error(f"Error verifying token: {str(e)}")
         # Invalid token

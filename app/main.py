@@ -139,8 +139,9 @@ async def admin_login_activities(request: Request, user=Depends(get_current_user
 
 # Add a logout route
 @app.get("/logout", response_class=HTMLResponse)
-async def logout(request: Request, response: RedirectResponse = RedirectResponse(url="/")):
+async def logout(request: Request):
     """Log out the user and redirect to the home page."""
+    response = RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
     response.delete_cookie(key="access_token")
     return response
 

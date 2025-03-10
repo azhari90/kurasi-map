@@ -27,7 +27,9 @@ function isAuthenticated() {
 
 // Logout function
 function logout() {
+    // Remove token from localStorage
     removeToken();
+    // Let the server-side logout route handle the rest
     window.location.href = '/logout';
 }
 
