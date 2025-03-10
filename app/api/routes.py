@@ -4,9 +4,13 @@ from typing import List, Dict, Any, Optional
 from app.core.auth import get_current_user, can_access_category
 from app.db import client
 from app.db.models import Location, LocationCreate, LocationUpdate, Category
+from app.api.auth import auth_router
 
 # Create API router
 api_router = APIRouter()
+
+# Include auth routes
+api_router.include_router(auth_router, prefix="/auth", tags=["auth"])
 
 @api_router.get("/categories", response_model=List[Dict[str, Any]])
 async def get_categories(user: Optional[Dict[str, Any]] = Depends(get_current_user)):
