@@ -48,129 +48,14 @@ async def login(request: LoginRequest, response: Response, req: Request):
     
     # Check if Supabase is configured
     if not supabase:
-        logger.warning("Supabase not configured. Using mock authentication.")
-        
-        # In development, require specific test credentials
-        test_credentials = {
-            "test@example.com": "password123",
-            "admin@example.com": "admin123"
-        }
-        
-        # Check if credentials are valid
-        if request.email not in test_credentials or request.password != test_credentials[request.email]:
-            # Log failed login attempt
-            await log_login_activity(
-                user_id="unknown",
-                email=request.email,
-                ip_address=ip_address,
-                user_agent=user_agent,
-                login_status="failed"
-            )
-            
-            logger.warning(f"Invalid test credentials for: {request.email}")
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid email or password",
-            )
-        
-        # Create a mock token and user for development
-        mock_token = f"mock_token_{uuid.uuid4()}"
-        mock_refresh_token = f"mock_refresh_token_{uuid.uuid4()}"
-        mock_user = {
-            "id": str(uuid.uuid4()),
-            "email": request.email,
-            "user_metadata": {"full_name": "Test User"},
-            "app_metadata": {},
-            "created_at": datetime.now().isoformat(),
-            "role": "admin" if request.email == "admin@example.com" else "user",
-        }
-        
-        # Set cookie if remember is True
-        if request.remember:
-            expires = datetime.now() + timedelta(days=30)
-            response.set_cookie(
-                key="access_token",
-                value=mock_token,
-                httponly=True,
-                expires=expires.strftime("%a, %d %b %Y %H:%M:%S GMT"),
-                secure=not settings.DEBUG,
-                samesite="lax",
-            )
-        
-        # Log login activity
-        await log_login_activity(
-            user_id=mock_user["id"],
-            email=request.email,
-            ip_address=ip_address,
-            user_agent=user_agent,
-            login_status="success"
+        logger.error("Supabase not configured. Cannot authenticate users.")
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Authentication service unavailable. Please try again later.",
         )
-        
-        logger.info(f"Mock login successful for: {request.email}")
-        
-        # Return mock token response
-        return {
-            "access_token": mock_token,
-            "token_type": "bearer",
-            "expires_in": 3600,
-            "refresh_token": mock_refresh_token,
-            "user": mock_user,
-        }
     
     try:
         logger.info(f"Attempting Supabase authentication for: {request.email}")
-        
-        # For development, allow specific test credentials
-        if settings.DEBUG:
-            test_credentials = {
-                "test@example.com": "password123",
-                "admin@example.com": "admin123"
-            }
-            
-            if request.email in test_credentials and request.password == test_credentials[request.email]:
-                logger.info(f"DEBUG mode: Using mock authentication for: {request.email}")
-                mock_token = f"mock_token_{uuid.uuid4()}"
-                mock_refresh_token = f"mock_refresh_token_{uuid.uuid4()}"
-                mock_user = {
-                    "id": str(uuid.uuid4()),
-                    "email": request.email,
-                    "user_metadata": {"full_name": "Test User"},
-                    "app_metadata": {},
-                    "created_at": datetime.now().isoformat(),
-                    "role": "admin" if request.email == "admin@example.com" else "user",
-                }
-                
-                # Set cookie if remember is True
-                if request.remember:
-                    expires = datetime.now() + timedelta(days=30)
-                    response.set_cookie(
-                        key="access_token",
-                        value=mock_token,
-                        httponly=True,
-                        expires=expires.strftime("%a, %d %b %Y %H:%M:%S GMT"),
-                        secure=False,
-                        samesite="lax",
-                    )
-                
-                # Log login activity
-                await log_login_activity(
-                    user_id=mock_user["id"],
-                    email=request.email,
-                    ip_address=ip_address,
-                    user_agent=user_agent,
-                    login_status="success"
-                )
-                
-                logger.info(f"DEBUG mode: Mock login successful for: {request.email}")
-                
-                # Return mock token response
-                return {
-                    "access_token": mock_token,
-                    "token_type": "bearer",
-                    "expires_in": 3600,
-                    "refresh_token": mock_refresh_token,
-                    "user": mock_user,
-                }
         
         # Authenticate with Supabase
         auth_response = supabase.auth.sign_in_with_password({
@@ -235,13 +120,11 @@ async def signup(request: SignupRequest):
     """Create a new user account."""
     # Check if Supabase is configured
     if not supabase:
-        logger.warning("Supabase not configured. Using mock signup.")
-        # Create a mock user ID for development
-        mock_user_id = str(uuid.uuid4())
-        return {
-            "message": "User created successfully. Please check your email for verification.",
-            "user_id": mock_user_id,
-        }
+        logger.error("Supabase not configured. Cannot create user accounts.")
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="User registration service unavailable. Please try again later.",
+        )
     
     try:
         # Create user with Supabase
