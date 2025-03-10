@@ -1,6 +1,6 @@
 from supabase import create_client, Client
 from typing import List, Dict, Any, Optional
-from datetime import datetime
+from datetime import datetime, timedelta
 import logging
 import json
 import os
@@ -295,44 +295,38 @@ async def log_login_activity(
     Returns:
         The created login activity record
     """
+    # Create login activity data
+    login_data = {
+        "id": 0,
+        "user_id": user_id,
+        "email": email,
+        "ip_address": ip_address,
+        "user_agent": user_agent,
+        "device_info": device_info,
+        "login_status": login_status,
+        "login_time": datetime.now().isoformat(),
+        "location": location
+    }
+    
     if not supabase:
         logger.warning("Cannot log login activity: Supabase not configured")
-        return {
-            "id": 0,
-            "user_id": user_id,
-            "email": email,
-            "login_status": login_status,
-            "login_time": datetime.now().isoformat()
-        }
+        return login_data
     
     try:
-        # Create login activity data
-        login_data = {
-            "user_id": user_id,
-            "email": email,
-            "ip_address": ip_address,
-            "user_agent": user_agent,
-            "device_info": device_info,
-            "login_status": login_status,
-            "login_time": datetime.now().isoformat(),
-            "location": location
-        }
+        # Only try to insert if we're in production mode
+        if not settings.DEBUG:
+            # Insert into login_activities table
+            response = supabase.table("login_activities").insert(login_data).execute()
+            
+            if response.data and len(response.data) > 0:
+                return response.data[0]
         
-        # Insert into login_activities table
-        response = supabase.table("login_activities").insert(login_data).execute()
-        
-        if response.data and len(response.data) > 0:
-            return response.data[0]
+        # In debug mode or if insert fails, just log and return the data
+        logger.info(f"Login activity: {login_data['email']} ({login_data['login_status']})")
         return login_data
     except Exception as e:
         logger.error(f"Error logging login activity: {str(e)}")
-        return {
-            "id": 0,
-            "user_id": user_id,
-            "email": email,
-            "login_status": login_status,
-            "login_time": datetime.now().isoformat()
-        }
+        return login_data
 
 async def get_login_activities(
     user_id: Optional[str] = None,
@@ -350,9 +344,38 @@ async def get_login_activities(
     Returns:
         List of login activities
     """
-    if not supabase:
-        logger.warning("Cannot get login activities: Supabase not configured")
-        return []
+    if not supabase or settings.DEBUG:
+        logger.info("Using mock login activities in development mode")
+        # Return mock data for development
+        return [
+            {
+                "id": 1,
+                "user_id": "1",
+                "email": "user1@example.com",
+                "ip_address": "192.168.1.1",
+                "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+                "login_status": "success",
+                "login_time": (datetime.now() - timedelta(hours=1)).isoformat(),
+            },
+            {
+                "id": 2,
+                "user_id": "2",
+                "email": "user2@example.com",
+                "ip_address": "192.168.1.2",
+                "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Safari/605.1.15",
+                "login_status": "success",
+                "login_time": (datetime.now() - timedelta(hours=2)).isoformat(),
+            },
+            {
+                "id": 3,
+                "user_id": "unknown",
+                "email": "invalid@example.com",
+                "ip_address": "192.168.1.3",
+                "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 14_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/604.1",
+                "login_status": "failed",
+                "login_time": (datetime.now() - timedelta(hours=3)).isoformat(),
+            }
+        ]
     
     try:
         query = supabase.table("login_activities").select("*")
@@ -372,4 +395,5 @@ async def get_login_activities(
         return response.data
     except Exception as e:
         logger.error(f"Error getting login activities: {str(e)}")
+        # Return empty list on error
         return []
