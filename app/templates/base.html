@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Kurasi Map{% endblock %}</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/styles.css') }}">
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">Kurasi Map</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Map</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            Categories
+                        </a>
+                        <ul class="dropdown-menu" id="category-dropdown">
+                            <li><a class="dropdown-item" href="/?category=restaurants">Restaurants</a></li>
+                            <li><a class="dropdown-item" href="/?category=cafes">Cafes</a></li>
+                            <li><a class="dropdown-item" href="/?category=sports">Sports Venues</a></li>
+                            <li><a class="dropdown-item" href="/?category=hospitals">Hospitals</a></li>
+                            <li><a class="dropdown-item" href="/?category=shopping">Shopping</a></li>
+                        </ul>
+                    </li>
+                </ul>
+                <div class="d-flex">
+                    <form class="d-flex me-2" role="search" action="/" method="get">
+                        <input class="form-control me-2" type="search" name="search" placeholder="Search locations...">
+                        <button class="btn btn-light" type="submit"><i class="fas fa-search"></i></button>
+                    </form>
+                    <div class="navbar-nav">
+                        {% if user %}
+                            <a class="nav-link" href="/profile">
+                                <i class="fas fa-user"></i> Profile
+                            </a>
+                            <a class="nav-link" href="/logout">
+                                <i class="fas fa-sign-out-alt"></i> Logout
+                            </a>
+                        {% else %}
+                            <a class="nav-link" href="/login">
+                                <i class="fas fa-sign-in-alt"></i> Login
+                            </a>
+                            <a class="nav-link" href="/signup">
+                                <i class="fas fa-user-plus"></i> Sign Up
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container-fluid p-0">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Kurasi Map</h5>
+                    <p>Discover curated locations across your city.</p>
+                </div>
+                <div class="col-md-3">
+                    <h5>Links</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="/" class="text-white">Home</a></li>
+                        <li><a href="/about" class="text-white">About</a></li>
+                        <li><a href="/pricing" class="text-white">Pricing</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3">
+                    <h5>Contact</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="mailto:info@kurasimap.com" class="text-white">info@kurasimap.com</a></li>
+                        <li><a href="https://instagram.com/kurasimap" class="text-white">@kurasimap</a></li>
+                    </ul>
+                </div>
+            </div>
+            <hr>
+            <div class="text-center">
+                <p>&copy; 2025 Kurasi Map. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', path='/js/main.js') }}"></script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
