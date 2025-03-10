@@ -86,8 +86,21 @@
             // Store the token in localStorage
             localStorage.setItem('access_token', data.access_token);
             
-            // Redirect to home page on success
-            window.location.href = '/';
+            // Update the UI to reflect the logged-in state
+            if (typeof updateAuthUI === 'function') {
+                updateAuthUI();
+            }
+            
+            // Show success message
+            errorMessage.textContent = 'Login successful! Redirecting...';
+            errorMessage.classList.remove('d-none');
+            errorMessage.classList.remove('alert-danger');
+            errorMessage.classList.add('alert-success');
+            
+            // Redirect to home page after a short delay
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 1000);
             
         } catch (error) {
             // Show error message

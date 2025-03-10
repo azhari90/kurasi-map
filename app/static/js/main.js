@@ -47,16 +47,51 @@ async function fetchWithAuth(url, options = {}) {
     return fetch(url, options);
 }
 
-// Handle logout button click
-document.addEventListener('DOMContentLoaded', function() {
-    const logoutLink = document.querySelector('a[href="/logout"]');
+// Update UI based on authentication state
+function updateAuthUI() {
+    const isLoggedIn = isAuthenticated();
     
-    if (logoutLink) {
-        logoutLink.addEventListener('click', function(e) {
-            e.preventDefault();
-            logout();
-        });
+    // Get the auth-related nav links
+    const authLinks = document.querySelector('.navbar-nav');
+    
+    if (authLinks) {
+        if (isLoggedIn) {
+            // User is logged in, show profile and logout links
+            authLinks.innerHTML = `
+                <a class="nav-link" href="/profile">
+                    <i class="fas fa-user"></i> Profile
+                </a>
+                <a class="nav-link" href="/logout" id="logout-link">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            `;
+            
+            // Add event listener to the new logout link
+            const logoutLink = document.getElementById('logout-link');
+            if (logoutLink) {
+                logoutLink.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    logout();
+                });
+            }
+        } else {
+            // User is not logged in, show login and signup links
+            authLinks.innerHTML = `
+                <a class="nav-link" href="/login">
+                    <i class="fas fa-sign-in-alt"></i> Login
+                </a>
+                <a class="nav-link" href="/signup">
+                    <i class="fas fa-user-plus"></i> Sign Up
+                </a>
+            `;
+        }
     }
+}
+
+// Handle document ready
+document.addEventListener('DOMContentLoaded', function() {
+    // Update UI based on authentication state
+    updateAuthUI();
     
     // Initialize tooltips
     const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
