@@ -1,0 +1,285 @@
+{% extends "base.html" %}
+
+{% block title %}{{ location.name }} - Kurasi Map{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Location Images -->
+            {% if location.images and location.images|length > 0 %}
+            <div id="locationCarousel" class="carousel slide mb-4" data-bs-ride="carousel">
+                <div class="carousel-inner rounded shadow">
+                    {% for image in location.images %}
+                    <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                        <img src="{{ image }}" class="d-block w-100" alt="{{ location.name }}" style="height: 400px; object-fit: cover;">
+                    </div>
+                    {% endfor %}
+                </div>
+                {% if location.images|length > 1 %}
+                <button class="carousel-control-prev" type="button" data-bs-target="#locationCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#locationCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>
+                {% endif %}
+            </div>
+            {% else %}
+            <div class="bg-light rounded shadow mb-4 d-flex align-items-center justify-content-center" style="height: 400px;">
+                <div class="text-center text-muted">
+                    <i class="fas fa-image fa-3x mb-3"></i>
+                    <p>No images available</p>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Location Details -->
+            <div class="card shadow mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h1 class="mb-1">{{ location.name }}</h1>
+                            <p class="text-muted mb-2">
+                                <i class="fas fa-map-marker-alt me-2"></i>{{ location.address }}
+                            </p>
+                            <div class="mb-3">
+                                <span class="badge bg-primary me-2">{{ location.category_name }}</span>
+                                {% if location.premium_only %}
+                                <span class="badge bg-warning text-dark">Premium</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div>
+                            <button class="btn btn-outline-danger btn-sm">
+                                <i class="far fa-heart"></i> Save
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <!-- Description -->
+                    {% if location.description %}
+                    <div class="mb-4">
+                        <h5>About</h5>
+                        <p>{{ location.description }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Typical Spending -->
+                    {% if location.typical_spending %}
+                    <div class="mb-4">
+                        <h5>Typical Spending</h5>
+                        <p>{{ location.typical_spending }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Contact Information -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h5>Contact Information</h5>
+                        </div>
+                        
+                        {% if location.phone %}
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <div class="me-3">
+                                    <i class="fas fa-phone fa-fw text-primary"></i>
+                                </div>
+                                <div>
+                                    <div class="text-muted small">Phone</div>
+                                    <a href="tel:{{ location.phone }}" class="text-decoration-none">{{ location.phone }}</a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if location.website %}
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <div class="me-3">
+                                    <i class="fas fa-globe fa-fw text-primary"></i>
+                                </div>
+                                <div>
+                                    <div class="text-muted small">Website</div>
+                                    <a href="{{ location.website }}" target="_blank" class="text-decoration-none">{{ location.website }}</a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if location.instagram %}
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <div class="me-3">
+                                    <i class="fab fa-instagram fa-fw text-primary"></i>
+                                </div>
+                                <div>
+                                    <div class="text-muted small">Instagram</div>
+                                    <a href="https://instagram.com/{{ location.instagram }}" target="_blank" class="text-decoration-none">@{{ location.instagram }}</a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Operating Hours -->
+                    {% if location.operating_hours %}
+                    <div class="mb-4">
+                        <h5>Operating Hours</h5>
+                        <div class="row">
+                            {% for day, hours in location.operating_hours.items %}
+                            <div class="col-md-6 mb-1">
+                                <div class="d-flex justify-content-between">
+                                    <span class="fw-bold">{{ day }}</span>
+                                    <span>{{ hours }}</span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Map -->
+            <div class="card shadow mb-4">
+                <div class="card-body p-0">
+                    <div id="detail-map" style="height: 300px;"></div>
+                </div>
+            </div>
+            
+            <!-- Actions -->
+            <div class="card shadow mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Actions</h5>
+                    <div class="d-grid gap-2">
+                        <a href="https://maps.google.com/?q={{ location.latitude }},{{ location.longitude }}" target="_blank" class="btn btn-success">
+                            <i class="fas fa-directions me-2"></i>Get Directions
+                        </a>
+                        <button class="btn btn-outline-primary">
+                            <i class="fas fa-share-alt me-2"></i>Share
+                        </button>
+                        <button class="btn btn-outline-secondary">
+                            <i class="fas fa-flag me-2"></i>Report Issue
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Nearby Locations -->
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Nearby Locations</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center py-4">
+                        <i class="fas fa-map-marker-alt fa-3x text-muted mb-3"></i>
+                        <p>Loading nearby locations...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Premium Feature Modal -->
+<div class="modal fade" id="premiumModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Premium Feature</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>This is a premium location. Please upgrade your account to access it.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <a href="/pricing" class="btn btn-primary">View Pricing</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', async function() {
+        // Check if premium location
+        {% if location.premium_only and not user %}
+            // Show premium modal for non-logged in users
+            const premiumModal = new bootstrap.Modal(document.getElementById('premiumModal'));
+            premiumModal.show();
+        {% endif %}
+        
+        // Initialize map
+        const detailMap = L.map('detail-map').setView([{{ location.latitude|default:default_lat }}, {{ location.longitude|default:default_lng }}], 15);
+        
+        // Add tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(detailMap);
+        
+        // Add marker
+        L.marker([{{ location.latitude|default:default_lat }}, {{ location.longitude|default:default_lng }}]).addTo(detailMap);
+        
+        // Fetch nearby locations
+        try {
+            const response = await fetch(`/api/locations?lat={{ location.latitude }}&lng={{ location.longitude }}&radius=1000&limit=5`);
+            const nearbyLocations = await response.json();
+            
+            // Update nearby locations section
+            const nearbyContainer = document.querySelector('.card:last-child .card-body');
+            
+            if (nearbyLocations.length > 0) {
+                let html = '';
+                
+                nearbyLocations.forEach(location => {
+                    if (location.id !== {{ location_id }}) {
+                        html += `
+                            <div class="d-flex mb-3">
+                                <div class="flex-shrink-0">
+                                    <div class="bg-light rounded" style="width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;">
+                                        <i class="fas fa-map-marker-alt text-primary"></i>
+                                    </div>
+                                </div>
+                                <div class="ms-3">
+                                    <h6 class="mb-0"><a href="/location/${location.id}" class="text-decoration-none">${location.name}</a></h6>
+                                    <p class="text-muted small mb-0">${location.address || ''}</p>
+                                    <span class="badge bg-primary">${location.category_id}</span>
+                                </div>
+                            </div>
+                        `;
+                    }
+                });
+                
+                if (html) {
+                    nearbyContainer.innerHTML = html;
+                } else {
+                    nearbyContainer.innerHTML = `
+                        <div class="text-center py-4">
+                            <i class="fas fa-map-marker-alt fa-3x text-muted mb-3"></i>
+                            <p>No nearby locations found</p>
+                        </div>
+                    `;
+                }
+            } else {
+                nearbyContainer.innerHTML = `
+                    <div class="text-center py-4">
+                        <i class="fas fa-map-marker-alt fa-3x text-muted mb-3"></i>
+                        <p>No nearby locations found</p>
+                    </div>
+                `;
+            }
+        } catch (error) {
+            console.error('Error fetching nearby locations:', error);
+        }
+    });
+</script>
+{% endblock %}
