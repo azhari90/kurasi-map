@@ -44,6 +44,8 @@ async def login(request: LoginRequest, response: Response, req: Request):
     ip_address = req.client.host if req.client else None
     user_agent = req.headers.get("user-agent")
     
+    logger.info(f"Login attempt for email: {request.email}")
+    
     # Check if Supabase is configured
     if not supabase:
         logger.warning("Supabase not configured. Using mock authentication.")
@@ -79,6 +81,8 @@ async def login(request: LoginRequest, response: Response, req: Request):
             login_status="success"
         )
         
+        logger.info(f"Mock login successful for: {request.email}")
+        
         # Return mock token response
         return {
             "access_token": mock_token,
@@ -89,6 +93,53 @@ async def login(request: LoginRequest, response: Response, req: Request):
         }
     
     try:
+        logger.info(f"Attempting Supabase authentication for: {request.email}")
+        
+        # For development, allow any email/password combination
+        if settings.DEBUG and request.email and request.password:
+            logger.info(f"DEBUG mode: Using mock authentication for: {request.email}")
+            mock_token = f"mock_token_{uuid.uuid4()}"
+            mock_refresh_token = f"mock_refresh_token_{uuid.uuid4()}"
+            mock_user = {
+                "id": str(uuid.uuid4()),
+                "email": request.email,
+                "user_metadata": {"full_name": "Test User"},
+                "app_metadata": {},
+                "created_at": datetime.now().isoformat(),
+            }
+            
+            # Set cookie if remember is True
+            if request.remember:
+                expires = datetime.now() + timedelta(days=30)
+                response.set_cookie(
+                    key="access_token",
+                    value=mock_token,
+                    httponly=True,
+                    expires=expires.strftime("%a, %d %b %Y %H:%M:%S GMT"),
+                    secure=False,
+                    samesite="lax",
+                )
+            
+            # Log login activity
+            await log_login_activity(
+                user_id=mock_user["id"],
+                email=request.email,
+                ip_address=ip_address,
+                user_agent=user_agent,
+                login_status="success"
+            )
+            
+            logger.info(f"DEBUG mode: Mock login successful for: {request.email}")
+            
+            # Return mock token response
+            return {
+                "access_token": mock_token,
+                "token_type": "bearer",
+                "expires_in": 3600,
+                "refresh_token": mock_refresh_token,
+                "user": mock_user,
+            }
+        
         # Authenticate with Supabase
         auth_response = supabase.auth.sign_in_with_password({
             "email": request.email,
@@ -120,6 +171,8 @@ async def login(request: LoginRequest, response: Response, req: Request):
             login_status="success"
         )
         
+        logger.info(f"Supabase login successful for: {request.email}")
+        
         # Return token response
         return {
             "access_token": session.access_token,
@@ -129,7 +182,7 @@ async def login(request: LoginRequest, response: Response, req: Request):
             "user": user.model_dump(),
         }
     except Exception as e:
-        logger.error(f"Login error: {str(e)}")
+        logger.error(f"Login error for {request.email}: {str(e)}")
         
         # Log failed login attempt
         await log_login_activity(
@@ -142,7 +195,7 @@ async def login(request: LoginRequest, response: Response, req: Request):
         
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=str(e),
+            detail=f"Authentication failed: {str(e)}",
         )
 
 @auth_router.post("/signup", status_code=status.HTTP_201_CREATED)
